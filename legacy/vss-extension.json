@@ -2,7 +2,7 @@
     "manifestVersion": 1,
     "id": "team-calendar",
     "publisher": "ms-devlabs",
-    "version": "0.5.209",
+    "version": "0.5.227",
     "name": "Team Calendar",
     "description": "Track events important to your team, view and manage days off, quickly see when sprints start and end, and more.",
     "public": true,
@@ -99,12 +99,12 @@
         {
             "id": "calendar-has-moved-banner",
             "type": "ms.vss-web.global-message-banner",
-            "description": "Banner points out that the Calendar has moved to the Work hub.",
+            "description": "Banner points out that the Calendar has moved to the Boards hub.",
             "targets": [
                 "ms.vss-web.home-hub-group"
             ],
             "properties": {
-                "message": "The Calendar has moved! You may now find it under the Work menu.",
+                "message": "The Calendar has moved! You may now find it under the Boards menu.",
                 "level": "info"
             }
         },

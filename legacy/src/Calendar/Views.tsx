@@ -26,10 +26,9 @@ import * as WebApi_Contracts from "VSS/WebApi/Contracts";
 import * as Work_Contracts from "TFS/Work/Contracts";
 import * as FullCalendar from "fullcalendar"; // types only
 
-import { BaseComponent, IBaseProps, IContextualMenuItem, IBreadcrumbItem, SelectionMode } from "office-ui-fabric-react";
+import { BaseComponent, Callout, IBaseProps, IContextualMenuItem, IBreadcrumbItem, SelectionMode } from "office-ui-fabric-react";
 import { PivotBarItem } from "vss-ui/PivotBar";
 import { WebApiTeam } from "TFS/Core/Contracts";
-import { Callout } from "vss-ui/node_modules/office-ui-fabric-react/lib/Callout";
 
 const months = [
     "January",
@@ -150,16 +149,16 @@ export class CalendarStateManagerComponent extends BaseComponent<
         const navSvc = await VSS.getService<IHostNavigationService>(VSS.ServiceIds.Navigation);
         let selectedTeamId = (await navSvc.getCurrentState()).team;
         if (!selectedTeamId) {
-            // Nothing in URL - check context
+            // Nothing in URL - check data service
+            const dataSvc = await VSS.getService<IExtensionDataService>(VSS.ServiceIds.ExtensionData);
+            selectedTeamId = await dataSvc.getValue<string>("selected-team-" + VSS.getWebContext().project.id, { scopeType: "User" });
+        }
+        if (!selectedTeamId) {
+            // Nothing in URL or data service - check context
             const contextTeam = VSS.getWebContext().team;
             if (contextTeam && contextTeam.id) {
                 selectedTeamId = contextTeam.id;
             }
-        }
-        if (!selectedTeamId) {
-            // Nothing in URL or context - check data service
-            const dataSvc = await VSS.getService<IExtensionDataService>(VSS.ServiceIds.ExtensionData);
-            selectedTeamId = await dataSvc.getValue<string>("selected-team", { scopeType: "User" });
         }
         if (selectedTeamId) {
             // get the team if we found a way to choose one
@@ -181,7 +180,7 @@ export class CalendarStateManagerComponent extends BaseComponent<
         navSvc.updateHistoryEntry(null, { team: selectedTeam.id }, true, true, null, false);
 
         const dataSvc = await VSS.getService<IExtensionDataService>(VSS.ServiceIds.ExtensionData);
-        dataSvc.setValue<string>("selected-team", selectedTeam.id, { scopeType: "User" });
+        dataSvc.setValue<string>("selected-team-" + VSS.getWebContext().project.id, selectedTeam.id, { scopeType: "User" });
 
         this.setState({ selectedTeam });
     }
@@ -388,7 +387,7 @@ export class CalendarComponent extends BaseComponent<ICalendarHubProps, Calendar
                             getItems: () => {
                                 return new Promise<WebApiTeam[]>((resolve, reject) => {
                                     Tfs_Core_WebApi.getClient()
-                                        .getTeams(VSS.getWebContext().project.id, 1000)
+                                        .getTeams(VSS.getWebContext().project.id, 1000 as any)
                                         .then(result => {
                                             result.sort((a, b) => {
                                                 return a.name.toUpperCase().localeCompare(b.name.toUpperCase());
